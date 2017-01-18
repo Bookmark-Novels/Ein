@@ -13,11 +13,11 @@ defmodule DepTree do
     %Tree{value: v}
   end
 
-  defp add_tokens(tree, tokens, depender) do:
+  defp add_tokens(tree, tokens, dependent) do:
     if tokens == nil do
-      tree.dependents = [depender | tree.dependents]
+      tree.dependents = [dependet | tree.dependents]
     else
-      find_child_create_if_not_exists(tree, hd(tokens)) |> add_tokens(tl(tokens), depender)
+      find_child_create_if_not_exists(tree, hd(tokens)) |> add_tokens(tl(tokens), dependent)
     end
   end
 
@@ -32,8 +32,8 @@ defmodule DepTree do
     group
   end
 
-  defp add(group, dependent, depender) do:
-    add_tokens(group, String.split(nvalue, "."), depender)
+  defp add(group, dependence, dependent) do:
+    add_tokens(group, String.split(dependence, "."), dependent)
   end
 
   defp get_dependents_tokens_continue?(tree, tokens) do:
