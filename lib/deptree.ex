@@ -14,26 +14,26 @@ defmodule DepTree do
   end
 
   defp add_tokens(tree, tokens, dependent) do:
-    if tokens == nil do
-      tree.dependents = [dependet | tree.dependents]
+    if length(tokens) == 0 do
+      tree.dependents = [dependent | tree.dependents]
     else
       find_child_create_if_not_exists(tree, hd(tokens)) |> add_tokens(tl(tokens), dependent)
     end
   end
 
-  defp find_child_create_if_not_exists(tree, group) do:
+  defp find_child_create_if_not_exists(tree, resource) do:
     group = Enum.find(tree.children, fn(r) -> r.value == group end)
 
     if group == nil do
       group = create(group)
-      tree.children = [create(group) | tree.children]
+      tree.children = [create(resource) | tree.children]
     end
     
     group
   end
 
   defp add(group, dependence, dependent) do:
-    add_tokens(group, String.split(dependence, "."), dependent)
+    add_tokens(group.children, String.split(dependence, "."), dependent)
   end
 
   defp get_dependents_tokens_continue?(tree, tokens) do:
