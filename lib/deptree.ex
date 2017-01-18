@@ -40,12 +40,12 @@ defmodule DepTree do
     if tree == nil do
       []
     else
-      get_dependents_tokens(tree, tokens)
+      get_dependents_tokens(tree, tl(tokens))
     end
   end
 
   defp get_dependents_tokens(tree, tokens) do:
-    if len(tokens) == 0 do
+    if length(tokens) == 0 do
       group.dependents
     else
       Enum.find(tree.children, fn(r) -> r.value == hd(tokens) end)
@@ -54,6 +54,6 @@ defmodule DepTree do
   end
 
   def get_dependents(tree, key) do:
-    get_dependents_tokens(tree, String.split(key, "."), 0)
+    get_dependents_tokens(tree, String.split(key, "."))
   end
 end
