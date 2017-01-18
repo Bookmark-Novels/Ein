@@ -1,11 +1,11 @@
 defmodule Tree do
-  defstruct value, dependents: [], children []
+  defstruct value, dependents: [], children %{}
 end  
 
 defmodule DepTree do
-  def build(map) do:
+  def build(map) when is_map(map) do:
     base = create("bookmark")
-    Enum.each(map, fn({k, v}) -> add(base, k, v) end)
+    for {k, v} <- map, do: base = add(base, k, v)
     base
   end
 
@@ -13,47 +13,52 @@ defmodule DepTree do
     %Tree{value: v}
   end
 
-  defp add_tokens(tree, tokens, dependent) do:
-    if length(tokens) == 0 do
-      tree.dependents = [dependent | tree.dependents]
-    else
-      find_child_create_if_not_exists(tree, hd(tokens)) |> add_tokens(tl(tokens), dependent)
-    end
+  defp add_dep(%Tree{value: value, dependents: dependents, children: children}, [], dependent) do:
+    %Tree{value: value, dependents: [dependent | dependents], children: children}
   end
 
-  defp find_child_create_if_not_exists(tree, resource) do:
-    group = Enum.find(tree.children, fn(r) -> r.value == group end)
-
-    if group == nil do
-      group = create(group)
-      tree.children = [create(resource) | tree.children]
-    end
-    
-    group
+  defp add_dep(%Tree{value: value, dependents: dependents, children: children}, tokens, dependent) do:
+    updated_child = Map.get(children, hd(tokens)) |> add_dep(tl(tokens), dependent)
+    %Tree{value: value, dependents: dependents, children: %{children | hd(tokens) => updated_child}}
   end
 
-  defp add(group, dependence, dependent) do:
-    add_tokens(group, String.split(dependence, "."), dependent)
+  defp path_tokens(%Tree{value: value, dependents: dependents, children: children}, []) do:
+    %Tree{value: value, dependents: dependents, children: children}
+  end
+
+  # Follows a list of tokens in the dependency tree
+  # and creates new nodes if not available.
+  #
+  # @returns A Tree struct with the token path created as children/children of children.
+  defp path_tokens(%Tree{value: value, dependents: dependents, children: children}, tokens) do:
+    lazy = &(create(hd(tokens)))
+    child = Map.get(children, hd(tokens), lazy) |> path_tokens(tl(tokens))
+    %{Tree(value: value, dependents: dependents, children: %{children | hd(tokens) => child})
+  end
+
+  defp add(%Tree{value: value, dependents: dependents, children: children}, dependence, dependent) do:
+    tokens = String.split(dependence, ".")
+    path = path_tokens(%Tree{value: value, dependents: dependents, children: children}, tokens)
+    add_dep(path, tokens, dependent)
+  end
+
+  defp get_dependents_tokens_continue?(nil, tokens) do:
+    []
   end
 
   defp get_dependents_tokens_continue?(tree, tokens) do:
-    if tree == nil do
-      []
-    else
-      get_dependents_tokens(tree, tl(tokens))
-    end
+    get_dependents_tokens(tree, tl(tokens))
+  end
+
+  defp get_dependents_tokens(tree, []) do:
+    tree.dependents
   end
 
   defp get_dependents_tokens(tree, tokens) do:
-    if length(tokens) == 0 do
-      group.dependents
-    else
-      Enum.find(tree.children, fn(r) -> r.value == hd(tokens) end)
-        |> get_dependents_tokens_continue?(tokens)
-    end
+    Map.get(children, hd(tokens)) |> get_dependents_tokens_continue?(tokens)
   end
 
-  def get_dependents(tree, key) do:
+  def get_dependents(tree, key) when is_bitstring(key) do:
     get_dependents_tokens(tree, String.split(key, "."))
   end
 end
