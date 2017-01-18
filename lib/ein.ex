@@ -18,8 +18,13 @@ defmodule Ein do
     serve(client)
   end
 
-  defp list_dependencies(key) do:
+  defp get_next_dep(key, deps) do:
+    mapping = Application.fetch_env!(:bookmark_deps, :map)
     
+  end
+
+  defp list_dependencies(key) do:
+    get_next_dep(key, [])
   end
 
   defp invalidate(keys) do:
