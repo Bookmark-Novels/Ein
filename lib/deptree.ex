@@ -33,7 +33,7 @@ defmodule DepTree do
   end
 
   defp add(group, dependence, dependent) do:
-    add_tokens(group.children, String.split(dependence, "."), dependent)
+    add_tokens(group, String.split(dependence, "."), dependent)
   end
 
   defp get_dependents_tokens_continue?(tree, tokens) do:
